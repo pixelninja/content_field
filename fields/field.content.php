@@ -209,15 +209,7 @@
 					: json_encode($this->get('settings'))
 			);
 
-			Symphony::Database()->query("
-				DELETE FROM
-					`tbl_fields_{$handle}`
-				WHERE
-					`field_id` = '{$id}'
-				LIMIT 1
-			");
-
-			return Symphony::Database()->insert($fields, "tbl_fields_{$handle}");
+			return FieldManager::saveSettings($id, $fields);
 		}
 
 		public function displayPublishPanel(XMLElement &$wrapper, $all_data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
@@ -551,6 +543,12 @@
 			return null;
 		}
 
+		public function getImportModes() {
+			return array(
+				'getPostdata' =>	ImportableField::ARRAY_VALUE
+			);
+		}
+
 		/**
 		 * Give the field some data and ask it to return a value.
 		 *
@@ -558,10 +556,17 @@
 		 * @param integer $entry_id
 		 * @return array|null
 		 */
-		public function prepareImportValue($all_data, $entry_id = null) {
+		public function prepareImportValue($all_data, $mode, $entry_id = null) {
+			$results = array();
+			$modes = (object)$this->getImportModes();
+
+			// Not supported mode
+			if($mode !== $modes->getPostdata) {
+				return null;
+			}
+
 			$all_instances = $this->getInstances();
 			$all_settings = $this->getSettings();
-			$results = array();
 
 			if (is_array($all_data)) foreach ($all_data as $index => $item) {
 				$type = $item['type'];
