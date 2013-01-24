@@ -532,6 +532,10 @@
 				$instance->appendFormattedElement(
 					$item, $settings, $data, $entry_id
 				);
+				
+				foreach ($data as $node => $value) {
+					$item->appendChild(new XMLElement($node, $value));
+				}
 
 				$element->appendChild($item);
 			}
